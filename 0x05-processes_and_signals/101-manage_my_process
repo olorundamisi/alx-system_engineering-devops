@@ -17,28 +17,48 @@
 #   If any other or no arguments are passed, displays
 #+  "Usage: manage_my_process {start|stop|restart}"
 
-command="$1"
+error_msg="Usage: manage_my_process {start|stop|restart}"
+action=$1
+pid="/var/run/my_process.pid"
+process_file="manage_my_process"
 
-if [ -z "$command" ]; then
-	echo "Usage: manage_my_process {start|stop|restart}"
-	exit
-fi
+start()
+{
+	"./$process_file" &
+	echo $! > "$pid"
+	echo "$process_file started"
+}
 
-if [ "$command" == "start" ]; then
+stop()
+{
+	kill -s SIGKILL "$(cat $pid)"
+	rm -f "$pid"
+	echo "$process_file stopped"
+}
 
-	bash ./manage_my_process $
-	echo "$!" > /var/run/my_process.pid
-	echo "manage_my_process started"
-
-elif [ "$command" == "stop" ]; then
-	[ -e "/var/run/manage_my_process.pid ] && pkill -f './manage_my_process' && rm /var/run/my_process.pid
-	echo "manage_my_process stopped"
-
-elif [ "$command" == "restart" ]; then
-	"$0" stop >$ /dev/null
-	"$0" start >$ /dev/null
-	echo ""manage_my_process restarted"
-
-else 
-	echo "Usage: manage_my_process {start|stop|restart}"
-fi
+restart()
+{
+	if [ -e "$pid" ]
+	then
+		kill -s SIGKILL "$(cat $pid)"
+		rm -f "$pid"
+	fi
+	"./$process_file" &
+	echo $! > "$pid"
+	echo "$process_file restarted"
+}
+	
+case "X$action" in
+	"Xstart")
+		start
+		;;
+	"Xstop")
+		stop
+		;;
+	"Xrestart")
+		restart
+		;;
+	*)
+		echo "$error_msg"
+		;;
+esac
