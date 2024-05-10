@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Indefinitely writes "I am alive" to the file /tmp/my_process.
+#   Pauses two seconds in between each message.
+
+proc_filename="/tmp/my_process"
+touch "$proc_filename"
+
+while true
+do
+	echo "I am alive!" >> "$proc_filename"
+	sleep 2
+done
